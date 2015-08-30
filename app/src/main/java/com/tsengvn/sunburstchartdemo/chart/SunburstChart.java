@@ -1,11 +1,14 @@
 package com.tsengvn.sunburstchartdemo.chart;
 
+import android.animation.ValueAnimator;
 import android.content.Context;
 import android.graphics.Canvas;
+import android.support.v4.view.ViewCompat;
 import android.util.AttributeSet;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.animation.AccelerateDecelerateInterpolator;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,6 +23,10 @@ public class SunburstChart extends View {
     private ChartRenderer mChartRenderer;
     private GestureDetector mGestureDetector;
     private List<WrappedSlide> mWrappedSlides;
+    private boolean mIsShown = false;
+    private int mAnimationDuration = 400;
+
+    private IAnimationRenderer mAnimationRenderer = new SweepAnimationRenderer();
 
     public SunburstChart(Context context) {
         super(context);
@@ -34,17 +41,65 @@ public class SunburstChart extends View {
         mChartRenderer = new ChartRenderer(getContext());
         mGestureDetector = new GestureDetector(getContext(), mGestureListener);
         mWrappedSlides = new ArrayList<>();
+        setLayerType(LAYER_TYPE_SOFTWARE, null);
     }
 
     public void setChartData(SunburstChartData data) {
         calculate(data);
         mChartRenderer.setupData(mWrappedSlides);
-        invalidate();
+
+        if (mIsShown) {
+            invalidate();
+        }
     }
 
     public void setValueRenderer(IValueRenderer valueRenderer) {
         mChartRenderer.setValueRenderer(valueRenderer);
-        invalidate();
+        if (mIsShown) {
+            invalidate();
+        }
+    }
+
+    public void setHighlightParentOnSelected(boolean highlightParentOnSelected) {
+        mChartRenderer.setHighlightParentOnSelected(highlightParentOnSelected);
+    }
+
+    public void show(final boolean withAnimation) {
+        mIsShown = true;
+
+        if (withAnimation) {
+            ValueAnimator valueAnimator = ValueAnimator.ofFloat(0.0f, 1.0f);
+            valueAnimator.setDuration(mAnimationDuration);
+            valueAnimator.setInterpolator(new AccelerateDecelerateInterpolator());
+            valueAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+                @Override
+                public void onAnimationUpdate(ValueAnimator animation) {
+                    List<WrappedSlide> animatedWrappedSlides = new ArrayList<>();
+
+                    for (WrappedSlide wrappedSlide : mWrappedSlides) {
+                        WrappedSlide animatedWrappedSlide = new WrappedSlide(wrappedSlide.getSlide());
+                        animatedWrappedSlide.setSweepAngle(wrappedSlide.getSweepAngle());
+                        animatedWrappedSlide.setStartAngle(wrappedSlide.getStartAngle());
+                        animatedWrappedSlide.setLevel(wrappedSlide.getLevel());
+
+                        mAnimationRenderer.onAnimated(animation.getAnimatedFraction(), wrappedSlide, animatedWrappedSlide);
+                        animatedWrappedSlides.add(animatedWrappedSlide);
+                    }
+
+                    mChartRenderer.setupData(animatedWrappedSlides);
+                    ViewCompat.postInvalidateOnAnimation(SunburstChart.this);
+                }
+            });
+            valueAnimator.start();
+        } else {
+            mChartRenderer.setupData(mWrappedSlides);
+            invalidate();
+        }
+
+    }
+    @Override
+    protected void onAttachedToWindow() {
+        super.onAttachedToWindow();
     }
 
     @Override
@@ -54,18 +109,18 @@ public class SunburstChart extends View {
     }
 
     @Override
-    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
-        int width = MeasureSpec.getSize(widthMeasureSpec);
-        int height = MeasureSpec.getSize(heightMeasureSpec);
-        mChartRenderer.setupView(width, height, getPaddingLeft(), getPaddingTop(), getPaddingRight(), getPaddingBottom());
+    protected void onSizeChanged(int w, int h, int oldw, int oldh) {
+        super.onSizeChanged(w, h, oldw, oldh);
+        mChartRenderer.setupView(getWidth(), getHeight(), getPaddingLeft(), getPaddingTop(), getPaddingRight(), getPaddingBottom());
         invalidate();
     }
 
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
-        mChartRenderer.render(canvas);
+        if (mIsShown) {
+            mChartRenderer.render(canvas);
+        }
     }
 
     private GestureDetector.SimpleOnGestureListener mGestureListener = new GestureDetector.SimpleOnGestureListener(){
@@ -109,17 +164,5 @@ public class SunburstChart extends View {
         }
     }
 
-//    private void calculateAngle(List<Slide> slides, double sumValue, float startAngle, float totalSweepAngle) {
-//        double factor = totalSweepAngle / sumValue;
-//        for (Slide slide : slides) {
-//            float sweepAngle = (float) (slide.getValue() * factor);
-//            slide.setAngle(startAngle, sweepAngle);
-//
-//            if (!slide.getChilds().isEmpty()) {
-//                calculateAngle(slide.getChilds(), slide.getValue(), startAngle, sweepAngle);
-//            }
-//
-//            startAngle += sweepAngle;
-//        }
-//    }
+
 }

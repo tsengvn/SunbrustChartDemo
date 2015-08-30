@@ -34,25 +34,4 @@ public class SunburstChartData {
         }
     }
 
-//    public int getLevel() {
-//        return 3;
-//    }
-//
-//    public void calculate() {
-//        calculateAngle(mSlides, mSumValue, 0, 360);
-//    }
-//
-//    private void calculateAngle(List<Slide> slides, double sumValue, float startAngle, float totalSweepAngle) {
-//        double factor = totalSweepAngle/sumValue;
-//        for (Slide slide : slides) {
-//            float sweepAngle = (float) (slide.getValue() * factor);
-//            slide.setAngle(startAngle, sweepAngle);
-//
-//            if (!slide.getChilds().isEmpty()) {
-//                calculateAngle(slide.getChilds(), slide.getValue(), startAngle, sweepAngle);
-//            }
-//
-//            startAngle += sweepAngle;
-//        }
-//    }
 }

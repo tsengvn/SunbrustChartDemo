@@ -1,5 +1,7 @@
 package com.tsengvn.sunburstchartdemo.chart;
 
+import android.graphics.Path;
+
 /**
  * Copyright (c) 2015, Posiba. All rights reserved.
  *
@@ -11,6 +13,7 @@ class WrappedSlide {
     private int mLevel;
     private float mStartAngle;
     private float mSweepAngle;
+    private Path mPath;
 
     public WrappedSlide(Slide slide) {
         mSlide = slide;
@@ -51,5 +54,13 @@ class WrappedSlide {
 
     public void setSweepAngle(float sweepAngle) {
         mSweepAngle = sweepAngle;
+    }
+
+    public void setPath(Path path) {
+        mPath = path;
+    }
+
+    public Path getPath() {
+        return mPath;
     }
 }

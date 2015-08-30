@@ -6,7 +6,6 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.PointF;
-import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,6 +23,7 @@ public class ChartRenderer {
     private Paint mStrokePaint;
 
     private IValueRenderer mValueRenderer;
+
     private List<WrappedSlide> mWrappedSlides = null;
 
     private PointF mCenterPoint = null;
@@ -31,6 +31,8 @@ public class ChartRenderer {
     private int mViewHeight;
     private int mRadius;
     private WrappedSlide mSelectedSlide = null;
+    private boolean mHighlightParent = false;
+    private boolean mShowAnimation = true;
     private Context mContext;
 
     public ChartRenderer(Context context) {
@@ -49,6 +51,7 @@ public class ChartRenderer {
         mStrokePaint.setDither(true);
 
         mValueRenderer = new SimpleValueRenderer(mContext);
+
         mWrappedSlides = new ArrayList<>();
     }
 
@@ -59,10 +62,15 @@ public class ChartRenderer {
         calculateRadius();
     }
 
-    public void setupData(List<WrappedSlide> wrappedSlides) {
+    public synchronized void setupData(List<WrappedSlide> wrappedSlides) {
         mWrappedSlides.clear();
         mWrappedSlides.addAll(wrappedSlides);
         calculateRadius();
+    }
+
+    public synchronized void setupDataOnAnimation(List<WrappedSlide> wrappedSlides) {
+        mWrappedSlides.clear();
+        mWrappedSlides.addAll(wrappedSlides);
     }
 
     public void setValueRenderer(IValueRenderer valueRenderer) {
@@ -72,7 +80,6 @@ public class ChartRenderer {
     public synchronized boolean handleClick(float x, float y){
         int distance = (int) Math.abs(Math.sqrt(Math.pow((x-mCenterPoint.x), 2) + Math.pow((y - mCenterPoint.y), 2)));
         float angle = ArcUtils.angleFromPoint(mCenterPoint, x, y);
-        Log.v(TAG, "handleClick:" + "distance " + distance + " angle " + angle);
 
         mSelectedSlide = findClickedSlide(distance, angle);;
         return mSelectedSlide != null;
@@ -108,33 +115,36 @@ public class ChartRenderer {
         return null;
     }
 
+    private Path mPath = new Path();
     private void renderChart(Canvas canvas, PointF center, float startAngle, float sweepAngle,
                              int innerRadius, int outRadius, Paint filledPaint, Paint strokePaint) {
+        mPath.reset();
         //draw outer arc
-        Path path = ArcUtils.createBezierArcDegrees(center, outRadius, startAngle, sweepAngle, 8, false, null);
+        mPath = ArcUtils.createBezierArcDegrees(center, outRadius, startAngle, sweepAngle, 8, false, mPath);
         PointF pointF = ArcUtils.pointFromAngleDegrees(center, innerRadius, startAngle + sweepAngle);
 
         //line to start point of inner arc
-        path.lineTo(pointF.x, pointF.y);
+        mPath.lineTo(pointF.x, pointF.y);
 
         //draw inner arc, anti-clockwise
-        ArcUtils.createBezierArcDegrees(center, innerRadius, startAngle + sweepAngle, -sweepAngle, 8, false, path);
+        ArcUtils.createBezierArcDegrees(center, innerRadius, startAngle + sweepAngle, -sweepAngle, 8, false, mPath);
         pointF = ArcUtils.pointFromAngleDegrees(center, outRadius, startAngle);
 
         //lint to start point of outer arc
-        path.lineTo(pointF.x, pointF.y);
+        mPath.lineTo(pointF.x, pointF.y);
 
         //draw whole arc and stroke line
-        canvas.drawPath(path, filledPaint);
-        canvas.drawPath(path, strokePaint);
+        canvas.drawPath(mPath, filledPaint);
+        canvas.drawPath(mPath, strokePaint);
     }
 
     private void renderValue(Canvas canvas, PointF center, Slide slide, float startAngle, float sweepAngle, int level) {
         //draw value
-        mValueRenderer.drawValue(canvas, center, slide, startAngle, sweepAngle, level);
+        float textRadius = mRadius*level + mRadius/2;
+        mValueRenderer.drawValue(canvas, center, slide, startAngle, sweepAngle, textRadius);
     }
 
-    private void calculateRadius() {
+    private synchronized void calculateRadius() {
         int maxLevel = 1;
         for (WrappedSlide wrappedSlide : mWrappedSlides) {
             if (maxLevel < wrappedSlide.getLevel()) maxLevel = wrappedSlide.getLevel();
@@ -151,4 +161,7 @@ public class ChartRenderer {
     }
 
 
+    public void setHighlightParentOnSelected(boolean highlightParentOnSelected) {
+        mHighlightParent = highlightParentOnSelected;
+    }
 }

@@ -19,7 +19,7 @@ public class SimpleValueRenderer implements IValueRenderer{
     public SimpleValueRenderer(Context context) {
         mPaint = new Paint();
         mPaint.setAntiAlias(true);
-        mPaint.setTextSize(ChartUtils.convertDp2Pixel(context, 14f));
+        mPaint.setTextSize(ChartUtils.convertDp2Pixel(context, 12f));
     }
 
     @Override

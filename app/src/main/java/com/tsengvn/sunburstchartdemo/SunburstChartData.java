@@ -1,4 +1,4 @@
-package com.tsengvn.sunbrustchartdemo;
+package com.tsengvn.sunburstchartdemo;
 
 import java.util.ArrayList;
 import java.util.List;

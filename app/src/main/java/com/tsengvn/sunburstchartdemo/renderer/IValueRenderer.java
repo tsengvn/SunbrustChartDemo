@@ -1,9 +1,9 @@
-package com.tsengvn.sunbrustchartdemo.renderer;
+package com.tsengvn.sunburstchartdemo.renderer;
 
 import android.graphics.Canvas;
 import android.graphics.PointF;
 
-import com.tsengvn.sunbrustchartdemo.Slide;
+import com.tsengvn.sunburstchartdemo.Slide;
 
 /**
  * Copyright (c) 2015, Posiba. All rights reserved.

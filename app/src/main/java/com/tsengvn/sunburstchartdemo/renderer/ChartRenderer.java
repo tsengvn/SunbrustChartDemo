@@ -1,4 +1,4 @@
-package com.tsengvn.sunbrustchartdemo.renderer;
+package com.tsengvn.sunburstchartdemo.renderer;
 
 import android.content.Context;
 import android.graphics.Canvas;
@@ -8,9 +8,9 @@ import android.graphics.Path;
 import android.graphics.PointF;
 import android.util.Log;
 
-import com.tsengvn.sunbrustchartdemo.ArcUtils;
-import com.tsengvn.sunbrustchartdemo.Slide;
-import com.tsengvn.sunbrustchartdemo.SunburstChartData;
+import com.tsengvn.sunburstchartdemo.ArcUtils;
+import com.tsengvn.sunburstchartdemo.Slide;
+import com.tsengvn.sunburstchartdemo.SunburstChartData;
 
 import java.util.List;
 

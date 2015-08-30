@@ -1,4 +1,4 @@
-package com.tsengvn.sunbrustchartdemo;
+package com.tsengvn.sunburstchartdemo;
 
 import android.content.Context;
 import android.graphics.Canvas;
@@ -7,8 +7,8 @@ import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
 
-import com.tsengvn.sunbrustchartdemo.renderer.ChartRenderer;
-import com.tsengvn.sunbrustchartdemo.renderer.IValueRenderer;
+import com.tsengvn.sunburstchartdemo.renderer.ChartRenderer;
+import com.tsengvn.sunburstchartdemo.renderer.IValueRenderer;
 
 /**
  * Copyright (c) 2015, Posiba. All rights reserved.

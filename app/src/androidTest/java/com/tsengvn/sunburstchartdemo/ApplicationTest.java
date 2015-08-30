@@ -1,4 +1,4 @@
-package com.tsengvn.sunbrustchartdemo;
+package com.tsengvn.sunburstchartdemo;
 
 import android.app.Application;
 import android.test.ApplicationTestCase;

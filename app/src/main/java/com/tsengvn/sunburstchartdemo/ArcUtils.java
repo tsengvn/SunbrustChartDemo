@@ -1,4 +1,4 @@
-package com.tsengvn.sunbrustchartdemo;
+package com.tsengvn.sunburstchartdemo;
 
 /**
  * Copyright (c) 2015, Posiba. All rights reserved.

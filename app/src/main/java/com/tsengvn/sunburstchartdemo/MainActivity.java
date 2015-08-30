@@ -4,6 +4,10 @@ import android.app.Activity;
 import android.graphics.Color;
 import android.os.Bundle;
 
+import com.tsengvn.sunburstchartdemo.chart.Slide;
+import com.tsengvn.sunburstchartdemo.chart.SunburstChart;
+import com.tsengvn.sunburstchartdemo.chart.SunburstChartData;
+
 /**
  * Copyright (c) 2015, Posiba. All rights reserved.
  *
@@ -32,8 +36,7 @@ public class MainActivity extends Activity {
         sunburstChartData.addSlide(facebookSlide);
         sunburstChartData.addSlide(twitterSlide);
         sunburstChartData.addSlide(linkedInSlide);
-        sunburstChartData.calculate();
-
+        sunburstChartData.setUseValueForDrawing(true);
 
         SunburstChart chart = new SunburstChart(this);
         chart.setPadding(100, 100, 100, 100);

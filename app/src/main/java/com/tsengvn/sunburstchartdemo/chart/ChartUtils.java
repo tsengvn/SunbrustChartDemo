@@ -1,4 +1,4 @@
-package com.tsengvn.sunburstchartdemo;
+package com.tsengvn.sunburstchartdemo.chart;
 
 import android.content.Context;
 import android.util.TypedValue;

@@ -1,9 +1,7 @@
-package com.tsengvn.sunburstchartdemo.renderer;
+package com.tsengvn.sunburstchartdemo.chart;
 
 import android.graphics.Canvas;
 import android.graphics.PointF;
-
-import com.tsengvn.sunburstchartdemo.Slide;
 
 /**
  * Copyright (c) 2015, Posiba. All rights reserved.
@@ -12,5 +10,5 @@ import com.tsengvn.sunburstchartdemo.Slide;
  * @since 8/29/15
  */
 public interface IValueRenderer {
-    void drawValue(Canvas canvas, PointF center, Slide slide, float radius);
+    void drawValue(Canvas canvas, PointF center, Slide slide, float startAngle, float sweepAngle, float radius);
 }

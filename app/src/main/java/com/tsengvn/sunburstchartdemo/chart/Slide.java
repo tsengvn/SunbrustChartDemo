@@ -1,4 +1,4 @@
-package com.tsengvn.sunburstchartdemo;
+package com.tsengvn.sunburstchartdemo.chart;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,14 +12,22 @@ import java.util.List;
 public class Slide {
     private int mColor;
     private double mValue;
-    private float mStartAngle;
-    private float mSweepAngle;
+    private float mWeight;
     private List<Slide> mChilds;
 
     public Slide(int mColor, double mValue) {
         this.mColor = mColor;
         this.mValue = mValue;
         this.mChilds = new ArrayList<>();
+        this.mWeight = 1;
+    }
+
+    public float getWeight() {
+        return mWeight;
+    }
+
+    public void setWeight(float weight) {
+        mWeight = weight;
     }
 
     public void addChild(Slide slide) {
@@ -38,26 +46,11 @@ public class Slide {
         return mColor;
     }
 
-    public void setAngle(float startAngle, float sweepAngle) {
-        mStartAngle = startAngle;
-        mSweepAngle = sweepAngle;
-    }
-
-    public float getStartAngle() {
-        return mStartAngle;
-    }
-
-    public float getSweepAngle() {
-        return mSweepAngle;
-    }
-
     @Override
     public String toString() {
         return "Slide{" +
                 "mColor=" + mColor +
                 ", mValue=" + mValue +
-                ", mStartAngle=" + mStartAngle +
-                ", mSweepAngle=" + mSweepAngle +
                 ", mChilds=" + mChilds +
                 '}';
     }

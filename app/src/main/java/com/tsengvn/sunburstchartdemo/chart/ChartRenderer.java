@@ -1,4 +1,4 @@
-package com.tsengvn.sunburstchartdemo.renderer;
+package com.tsengvn.sunburstchartdemo.chart;
 
 import android.content.Context;
 import android.graphics.Canvas;
@@ -8,10 +8,7 @@ import android.graphics.Path;
 import android.graphics.PointF;
 import android.util.Log;
 
-import com.tsengvn.sunburstchartdemo.ArcUtils;
-import com.tsengvn.sunburstchartdemo.Slide;
-import com.tsengvn.sunburstchartdemo.SunburstChartData;
-
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -27,13 +24,13 @@ public class ChartRenderer {
     private Paint mStrokePaint;
 
     private IValueRenderer mValueRenderer;
-    private SunburstChartData mChartData = null;
+    private List<WrappedSlide> mWrappedSlides = null;
 
     private PointF mCenterPoint = null;
     private int mViewWidth;
     private int mViewHeight;
     private int mRadius;
-    private Slide mSelectedSlide = null;
+    private WrappedSlide mSelectedSlide = null;
     private Context mContext;
 
     public ChartRenderer(Context context) {
@@ -52,6 +49,7 @@ public class ChartRenderer {
         mStrokePaint.setDither(true);
 
         mValueRenderer = new SimpleValueRenderer(mContext);
+        mWrappedSlides = new ArrayList<>();
     }
 
     public void setupView(int viewWidth, int viewHeight, int paddingLeft, int paddingTop, int paddingRight, int paddingBottom) {
@@ -61,8 +59,9 @@ public class ChartRenderer {
         calculateRadius();
     }
 
-    public void setupData(SunburstChartData data) {
-        mChartData = data;
+    public void setupData(List<WrappedSlide> wrappedSlides) {
+        mWrappedSlides.clear();
+        mWrappedSlides.addAll(wrappedSlides);
         calculateRadius();
     }
 
@@ -75,53 +74,38 @@ public class ChartRenderer {
         float angle = ArcUtils.angleFromPoint(mCenterPoint, x, y);
         Log.v(TAG, "handleClick:" + "distance " + distance + " angle " + angle);
 
-        mSelectedSlide = null;
-        findClickedSlide(mChartData.getSlides(), 1, distance, angle);
-
+        mSelectedSlide = findClickedSlide(distance, angle);;
         return mSelectedSlide != null;
     }
 
     public void render(Canvas canvas) {
-        if (mChartData != null && mCenterPoint != null) {
-            render(canvas, mChartData.getSlides(), 1);
-        }
-    }
-
-    private void findClickedSlide(List<Slide> slides, int level, int distance, float angle) {
-        for (Slide slide : slides) {
-            if (distance > mRadius*level
-                    && distance < mRadius*(level+1)
-                    && angle > slide.getStartAngle()
-                    && angle < (slide.getStartAngle()+slide.getSweepAngle())){
-                mSelectedSlide = slide;
-            }
-
-            if (mSelectedSlide != null) {
-                return;
-            } else if (slide.getChilds().size() > 0) {
-                findClickedSlide(slide.getChilds(), level+1, distance, angle);
-            }
-        }
-    }
-
-    private void render(Canvas canvas, List<Slide> slides, int level) {
-        for (Slide slide : slides) {
-            if (mSelectedSlide != null) {
-                if (mSelectedSlide == slide) {
-                    mFilledPaint.setColor(slide.getColor());
+        if (!mWrappedSlides.isEmpty() && mCenterPoint != null) {
+            for (WrappedSlide wrappedSlide : mWrappedSlides) {
+                if (mSelectedSlide != null) {
+                    if (mSelectedSlide == wrappedSlide) {
+                        mFilledPaint.setColor(wrappedSlide.getSlide().getColor());
+                    } else {
+                        mFilledPaint.setColor(lighter(wrappedSlide.getSlide().getColor(), 0.8f));
+                    }
                 } else {
-                    mFilledPaint.setColor(lighter(slide.getColor(), 0.8f));
+                    mFilledPaint.setColor(wrappedSlide.getSlide().getColor());
                 }
-            } else {
-                mFilledPaint.setColor(slide.getColor());
-            }
-            renderChart(canvas, mCenterPoint, slide.getStartAngle(), slide.getSweepAngle(), mRadius * level, mRadius * (level + 1), mFilledPaint, mStrokePaint);
-            renderValue(canvas, mCenterPoint, slide, mRadius*level+mRadius/2);
-
-            if (slide.getChilds().size() > 0) {
-                render(canvas, slide.getChilds(), level + 1);
+                renderChart(canvas, mCenterPoint, wrappedSlide.getStartAngle(), wrappedSlide.getSweepAngle(), mRadius * wrappedSlide.getLevel(), mRadius * (wrappedSlide.getLevel() + 1), mFilledPaint, mStrokePaint);
+                renderValue(canvas, mCenterPoint, wrappedSlide.getSlide(), wrappedSlide.getStartAngle(), wrappedSlide.getSweepAngle(), wrappedSlide.getLevel());
             }
         }
+    }
+
+    private WrappedSlide findClickedSlide(int distance, float angle) {
+        for (WrappedSlide wrappedSlide : mWrappedSlides) {
+            if (distance > mRadius*wrappedSlide.getLevel()
+                    && distance < mRadius*(wrappedSlide.getLevel()+1)
+                    && angle > wrappedSlide.getStartAngle()
+                    && angle < (wrappedSlide.getStartAngle()+wrappedSlide.getSweepAngle())){
+                return wrappedSlide;
+            }
+        }
+        return null;
     }
 
     private void renderChart(Canvas canvas, PointF center, float startAngle, float sweepAngle,
@@ -145,13 +129,17 @@ public class ChartRenderer {
         canvas.drawPath(path, strokePaint);
     }
 
-    private void renderValue(Canvas canvas, PointF center, Slide slide, int level) {
+    private void renderValue(Canvas canvas, PointF center, Slide slide, float startAngle, float sweepAngle, int level) {
         //draw value
-        mValueRenderer.drawValue(canvas, center, slide, level);
+        mValueRenderer.drawValue(canvas, center, slide, startAngle, sweepAngle, level);
     }
 
     private void calculateRadius() {
-        int level = mChartData.getLevel() + 1;
+        int maxLevel = 1;
+        for (WrappedSlide wrappedSlide : mWrappedSlides) {
+            if (maxLevel < wrappedSlide.getLevel()) maxLevel = wrappedSlide.getLevel();
+        }
+        int level = maxLevel + 1;
         mRadius = mViewWidth > mViewHeight ? mViewHeight / level/2 : mViewWidth / level/2;
     }
 
